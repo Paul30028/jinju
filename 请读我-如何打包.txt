@@ -1,0 +1,31 @@
+金句日 APK 本机打包
+
+你的电脑 PATH 里可能没有 powershell.exe，已改成：
+  优先用 Node 打包（你已能 npm install / build）
+  其次用完整路径 PowerShell
+  最后纯 CMD
+
+========================================
+请双击（推荐）
+========================================
+  C:\Users\holyx\jinju-ri\RUN-BUILD-APK.bat
+
+或 PowerShell / CMD 里：
+  cd C:\Users\holyx\jinju-ri
+  npm run apk
+
+或：
+  cd C:\Users\holyx\jinju-ri
+  node scripts\build-apk-node.mjs
+
+========================================
+成功
+========================================
+  C:\Users\holyx\jinju-ri\jinju-ri-debug.apk
+  日志：build-apk-run.log
+
+========================================
+不要
+========================================
+  不要单独 Copy-Item（APK 未生成前必失败）
+  不要看旧的 Grok subagent 日志

@@ -1,0 +1,13 @@
+# 《珍贵的圣经应许》Precious Bible Promises — Samuel Clarke
+# UTF-8 源（PBP 和合本简体，公开领域整理）
+# 完整语料可在 shell 可用时由 scripts/import-promises.mjs 自动拉取：
+#   https://raw.githubusercontent.com/eliranwong/Precious-Bible-Promises/master/other-bible-versions/PBP_verses_CUVs.txt
+# 格式：（书 章:节）\t经文
+# 本文件为导入说明占位；完整 2400+ 行请运行 import-promises.mjs 生成。
+
+＊	PRECIOUS BIBLE PROMISES (sample header)
+（诗 84:11）	因为耶和华－上帝是日头，是盾牌， 要赐下恩惠和荣耀。 他未尝留下一样好处不给那些行动正直的人。
+（诗 23:1）	耶和华是我的牧者， 我必不致缺乏。
+（赛 43:2）	你从水中经过，我必与你同在； 你趟过江河，水必不漫过你； 你从火中行过，必不被烧， 火焰也不着在你身上。
+（约 14:18）	我不撇下你们为孤儿，我必到你们这里来。
+（罗 8:32）	上帝既不爱惜自己的儿子，为我们众人舍了，岂不也把万物和他一同白白地赐给我们吗？

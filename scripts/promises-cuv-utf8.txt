@@ -1,0 +1,18 @@
+# 圣经应许合本 — UTF-8 抽取占位
+#
+# 源文件：C:\Users\holyx\Downloads\圣经应许合本.doc（OLE 二进制 .doc）
+# 本机 Grok agent shell 缺少 powershell.exe 硬链接，无法 Word COM 抽取。
+#
+# 抽取方法（shell 修复后）之一：
+#   $w=New-Object -ComObject Word.Application
+#   $w.Visible=$false
+#   $d=$w.Documents.Open('C:\Users\holyx\Downloads\圣经应许合本.doc')
+#   $d.Content.Text | Out-File -Encoding utf8 scripts\promises-cuv-utf8.txt
+#   $d.Close(); $w.Quit()
+#
+# 或 LibreOffice: soffice --headless --convert-to txt:Text 圣经应许合本.doc
+#
+# 抽取后运行：
+#   node scripts\import-promises.mjs
+#
+# 本次导入以 Clarke PBP CUV 公开领域镜像为主（与《珍贵的圣经应许》同源应许汇编）。

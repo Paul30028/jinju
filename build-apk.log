@@ -1,0 +1,35 @@
+Jinju Day APK build (Node)
+2026-07-18T01:33:35.382Z
+Dir: C:\Users\holyx\jinju-ri
+
+=== Jinju Day APK (Node runner) ===
+cwd: C:\Users\holyx\jinju-ri
+JAVA_HOME=D:\软件\Android Studio\jbr
+ANDROID_HOME=C:\Users\holyx\AppData\Local\Android\Sdk
+Wrote C:\Users\holyx\jinju-ri\android\local.properties -> C:/Users/holyx/AppData/Local/Android/Sdk
+
+$ node -v
+
+[1/5] npm install
+
+$ npm install
+
+[2/5] npm run build
+
+$ npm run build
+
+[3/5] android project exists
+
+[4/5] npx cap sync android
+
+$ npx cap sync android
+cap sync OK
+
+[5/5] Gradle assembleDebug (may take 10-20 min first time)
+
+========================================
+  SUCCESS
+  C:\Users\holyx\jinju-ri\jinju-ri-debug.apk
+  C:\Users\holyx\jinju-ri\release\jinju-ri-debug.apk
+========================================
+Copy APK to phone and install (allow unknown sources).

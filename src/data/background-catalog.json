@@ -1,0 +1,676 @@
+{
+  "version": 8,
+  "updatedAt": "2026-07-18",
+  "sourceNote": "v8：严格单主题；禁止人物肖像（URL 黑名单+标签）。已移除 sanctuary 举手人群图等。书卷=无人物书页。禁止跨主题与随机图。",
+  "items": [
+    {
+      "id": "dawn-1",
+      "themes": [
+        "dawn"
+      ],
+      "tags": [
+        "sunrise"
+      ],
+      "url": "https://images.unsplash.com/photo-1495616811223-4d98c6e9c869?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 黎明"
+    },
+    {
+      "id": "dawn-2",
+      "themes": [
+        "dawn"
+      ],
+      "tags": [
+        "morning-field"
+      ],
+      "url": "https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 黎明"
+    },
+    {
+      "id": "dawn-3",
+      "themes": [
+        "dawn"
+      ],
+      "tags": [
+        "sunrise-sky"
+      ],
+      "url": "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 黎明"
+    },
+    {
+      "id": "dawn-4",
+      "themes": [
+        "dawn"
+      ],
+      "tags": [
+        "morning-light"
+      ],
+      "url": "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 黎明"
+    },
+    {
+      "id": "dawn-5",
+      "themes": [
+        "dawn"
+      ],
+      "tags": [
+        "soft-morning"
+      ],
+      "url": "https://images.unsplash.com/photo-1507400492013-162706c8c05e?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 黎明"
+    },
+    {
+      "id": "dawn-6",
+      "themes": [
+        "dawn"
+      ],
+      "tags": [
+        "sunrise-mountains"
+      ],
+      "url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 黎明"
+    },
+    {
+      "id": "dawn-7",
+      "themes": [
+        "dawn"
+      ],
+      "tags": [
+        "golden-hour"
+      ],
+      "url": "https://images.unsplash.com/photo-1493246507139-91e8fad9978e?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 黎明"
+    },
+    {
+      "id": "dawn-8",
+      "themes": [
+        "dawn"
+      ],
+      "tags": [
+        "sunrise-lake"
+      ],
+      "url": "https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 黎明"
+    },
+    {
+      "id": "night-1",
+      "themes": [
+        "night"
+      ],
+      "tags": [
+        "stars"
+      ],
+      "url": "https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 静夜"
+    },
+    {
+      "id": "night-2",
+      "themes": [
+        "night"
+      ],
+      "tags": [
+        "night-sky"
+      ],
+      "url": "https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 静夜"
+    },
+    {
+      "id": "night-3",
+      "themes": [
+        "night"
+      ],
+      "tags": [
+        "starry"
+      ],
+      "url": "https://images.unsplash.com/photo-1464802686167-b939a6910659?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 静夜"
+    },
+    {
+      "id": "night-4",
+      "themes": [
+        "night"
+      ],
+      "tags": [
+        "night-ocean"
+      ],
+      "url": "https://images.unsplash.com/photo-1475274047050-1d0c0975c63e?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 静夜"
+    },
+    {
+      "id": "night-5",
+      "themes": [
+        "night"
+      ],
+      "tags": [
+        "night-city"
+      ],
+      "url": "https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 静夜"
+    },
+    {
+      "id": "night-6",
+      "themes": [
+        "night"
+      ],
+      "tags": [
+        "aurora"
+      ],
+      "url": "https://images.unsplash.com/photo-1531366936337-7c912a4589a7?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 静夜"
+    },
+    {
+      "id": "night-7",
+      "themes": [
+        "night"
+      ],
+      "tags": [
+        "moon"
+      ],
+      "url": "https://images.unsplash.com/photo-1502134249126-9f3755a50d78?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 静夜"
+    },
+    {
+      "id": "night-8",
+      "themes": [
+        "night"
+      ],
+      "tags": [
+        "galaxy"
+      ],
+      "url": "https://images.unsplash.com/photo-1444703686981-a3abbc4d4fe3?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 静夜"
+    },
+    {
+      "id": "wild-1",
+      "themes": [
+        "wilderness"
+      ],
+      "tags": [
+        "desert"
+      ],
+      "url": "https://images.unsplash.com/photo-1509316785289-025f5b846b35?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 旷野"
+    },
+    {
+      "id": "wild-2",
+      "themes": [
+        "wilderness"
+      ],
+      "tags": [
+        "canyon"
+      ],
+      "url": "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 旷野"
+    },
+    {
+      "id": "wild-3",
+      "themes": [
+        "wilderness"
+      ],
+      "tags": [
+        "mountain"
+      ],
+      "url": "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 旷野"
+    },
+    {
+      "id": "wild-4",
+      "themes": [
+        "wilderness"
+      ],
+      "tags": [
+        "arid"
+      ],
+      "url": "https://images.unsplash.com/photo-1473580044384-7ba9967e16a0?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 旷野"
+    },
+    {
+      "id": "wild-5",
+      "themes": [
+        "wilderness"
+      ],
+      "tags": [
+        "valley"
+      ],
+      "url": "https://images.unsplash.com/photo-1426604966848-d7adac402bff?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 旷野"
+    },
+    {
+      "id": "wild-6",
+      "themes": [
+        "wilderness"
+      ],
+      "tags": [
+        "rock"
+      ],
+      "url": "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 旷野"
+    },
+    {
+      "id": "wild-7",
+      "themes": [
+        "wilderness"
+      ],
+      "tags": [
+        "mesa"
+      ],
+      "url": "https://images.unsplash.com/photo-1540202404-a2f29016b523?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 旷野"
+    },
+    {
+      "id": "mist-1",
+      "themes": [
+        "mist"
+      ],
+      "tags": [
+        "forest-mist"
+      ],
+      "url": "https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 晨雾"
+    },
+    {
+      "id": "mist-2",
+      "themes": [
+        "mist"
+      ],
+      "tags": [
+        "fog-mountain"
+      ],
+      "url": "https://images.unsplash.com/photo-1483728642387-6c3bdd6c93e5?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 晨雾"
+    },
+    {
+      "id": "mist-3",
+      "themes": [
+        "mist"
+      ],
+      "tags": [
+        "misty-woods"
+      ],
+      "url": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 晨雾"
+    },
+    {
+      "id": "mist-4",
+      "themes": [
+        "mist"
+      ],
+      "tags": [
+        "fog-path"
+      ],
+      "url": "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 晨雾"
+    },
+    {
+      "id": "mist-5",
+      "themes": [
+        "mist"
+      ],
+      "tags": [
+        "soft-fog"
+      ],
+      "url": "https://images.unsplash.com/photo-1418065460487-3e41a6c84dc5?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 晨雾"
+    },
+    {
+      "id": "mist-6",
+      "themes": [
+        "mist"
+      ],
+      "tags": [
+        "forest-path"
+      ],
+      "url": "https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 晨雾"
+    },
+    {
+      "id": "mist-7",
+      "themes": [
+        "mist"
+      ],
+      "tags": [
+        "sun-mist"
+      ],
+      "url": "https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 晨雾"
+    },
+    {
+      "id": "bible-1",
+      "themes": [
+        "parchment"
+      ],
+      "tags": [
+        "paper-pages",
+        "no-people"
+      ],
+      "url": "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 书页"
+    },
+    {
+      "id": "bible-2",
+      "themes": [
+        "parchment"
+      ],
+      "tags": [
+        "open-pages",
+        "no-people"
+      ],
+      "url": "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 书页"
+    },
+    {
+      "id": "bible-3",
+      "themes": [
+        "parchment"
+      ],
+      "tags": [
+        "book-stack",
+        "no-people"
+      ],
+      "url": "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 书页"
+    },
+    {
+      "id": "bible-4",
+      "themes": [
+        "parchment"
+      ],
+      "tags": [
+        "library-shelf",
+        "no-people"
+      ],
+      "url": "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 书页"
+    },
+    {
+      "id": "bible-5",
+      "themes": [
+        "parchment"
+      ],
+      "tags": [
+        "open-book",
+        "no-people"
+      ],
+      "url": "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 书页"
+    },
+    {
+      "id": "bible-6",
+      "themes": [
+        "parchment"
+      ],
+      "tags": [
+        "old-pages",
+        "no-people"
+      ],
+      "url": "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 书页"
+    },
+    {
+      "id": "bible-7",
+      "themes": [
+        "parchment"
+      ],
+      "tags": [
+        "paper-texture",
+        "no-people"
+      ],
+      "url": "https://images.unsplash.com/photo-1532012197267-da84d127e765?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 书页"
+    },
+    {
+      "id": "bible-8",
+      "themes": [
+        "parchment"
+      ],
+      "tags": [
+        "notebook",
+        "no-people"
+      ],
+      "url": "https://images.unsplash.com/photo-1516979187457-637abb4f9353?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 书页"
+    },
+    {
+      "id": "sanctuary-1",
+      "themes": [
+        "sanctuary"
+      ],
+      "tags": [
+        "stained-glass"
+      ],
+      "url": "https://images.unsplash.com/photo-1438032005730-c779502df39b?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 圣所"
+    },
+    {
+      "id": "sanctuary-2",
+      "themes": [
+        "sanctuary"
+      ],
+      "tags": [
+        "church-aisle"
+      ],
+      "url": "https://images.unsplash.com/photo-1478146896981-b80fe463b330?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 圣所"
+    },
+    {
+      "id": "sanctuary-3",
+      "themes": [
+        "sanctuary"
+      ],
+      "tags": [
+        "church-interior"
+      ],
+      "url": "https://images.unsplash.com/photo-1519491050282-cf00c82424b4?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 圣所"
+    },
+    {
+      "id": "sanctuary-4",
+      "themes": [
+        "sanctuary"
+      ],
+      "tags": [
+        "cathedral"
+      ],
+      "url": "https://images.unsplash.com/photo-1548625149-fc4a29cf7092?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 圣所"
+    },
+    {
+      "id": "sanctuary-5",
+      "themes": [
+        "sanctuary"
+      ],
+      "tags": [
+        "empty-nave",
+        "no-people"
+      ],
+      "url": "https://images.unsplash.com/photo-1473177104440-ffee2f376098?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 圣所"
+    },
+    {
+      "id": "sanctuary-6",
+      "themes": [
+        "sanctuary"
+      ],
+      "tags": [
+        "chapel"
+      ],
+      "url": "https://images.unsplash.com/photo-1465847899084-d164df4dedc6?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 圣所"
+    },
+    {
+      "id": "sanctuary-7",
+      "themes": [
+        "sanctuary"
+      ],
+      "tags": [
+        "cathedral-nave"
+      ],
+      "url": "https://images.unsplash.com/photo-1520637836862-4d197d17c35a?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 圣所"
+    },
+    {
+      "id": "olive-1",
+      "themes": [
+        "olive"
+      ],
+      "tags": [
+        "olive-grove"
+      ],
+      "url": "https://images.unsplash.com/photo-1446071103084-c257b5f70672?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 橄榄"
+    },
+    {
+      "id": "olive-2",
+      "themes": [
+        "olive"
+      ],
+      "tags": [
+        "green-garden"
+      ],
+      "url": "https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 橄榄"
+    },
+    {
+      "id": "olive-3",
+      "themes": [
+        "olive"
+      ],
+      "tags": [
+        "green-field"
+      ],
+      "url": "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 橄榄"
+    },
+    {
+      "id": "olive-4",
+      "themes": [
+        "olive"
+      ],
+      "tags": [
+        "meadow"
+      ],
+      "url": "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 橄榄"
+    },
+    {
+      "id": "olive-5",
+      "themes": [
+        "olive"
+      ],
+      "tags": [
+        "branch"
+      ],
+      "url": "https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 橄榄"
+    },
+    {
+      "id": "olive-6",
+      "themes": [
+        "olive"
+      ],
+      "tags": [
+        "garden-path"
+      ],
+      "url": "https://images.unsplash.com/photo-1465146633011-14f8e0781093?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 橄榄"
+    },
+    {
+      "id": "olive-7",
+      "themes": [
+        "olive"
+      ],
+      "tags": [
+        "green-nature"
+      ],
+      "url": "https://images.unsplash.com/photo-1518173946687-a4c8892bbd9f?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 橄榄"
+    },
+    {
+      "id": "olive-8",
+      "themes": [
+        "olive"
+      ],
+      "tags": [
+        "sunset-field"
+      ],
+      "url": "https://images.unsplash.com/photo-1499002238440-d264edd596ec?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 橄榄"
+    },
+    {
+      "id": "river-1",
+      "themes": [
+        "river"
+      ],
+      "tags": [
+        "waterfall"
+      ],
+      "url": "https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 活水"
+    },
+    {
+      "id": "river-2",
+      "themes": [
+        "river"
+      ],
+      "tags": [
+        "sea-shore"
+      ],
+      "url": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 活水"
+    },
+    {
+      "id": "river-3",
+      "themes": [
+        "river"
+      ],
+      "tags": [
+        "blue-water"
+      ],
+      "url": "https://images.unsplash.com/photo-1494500764479-0c8f2919a3d8?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 活水"
+    },
+    {
+      "id": "river-4",
+      "themes": [
+        "river"
+      ],
+      "tags": [
+        "river-calm"
+      ],
+      "url": "https://images.unsplash.com/photo-1476673160081-cf065607f449?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 活水"
+    },
+    {
+      "id": "river-5",
+      "themes": [
+        "river"
+      ],
+      "tags": [
+        "clear-stream"
+      ],
+      "url": "https://images.unsplash.com/photo-1519904981063-b0cf448d479e?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 活水"
+    },
+    {
+      "id": "river-6",
+      "themes": [
+        "river"
+      ],
+      "tags": [
+        "lake-mountains"
+      ],
+      "url": "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 活水"
+    },
+    {
+      "id": "river-7",
+      "themes": [
+        "river"
+      ],
+      "tags": [
+        "turquoise"
+      ],
+      "url": "https://images.unsplash.com/photo-1505142468610-359e7d316be0?auto=format&fit=crop&w=1080&q=80",
+      "credit": "Unsplash · 活水"
+    }
+  ]
+}

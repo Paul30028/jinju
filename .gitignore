@@ -1,0 +1,18 @@
+node_modules
+dist
+dist-ssr
+*.local
+.DS_Store
+.env
+.env.*
+!.env.example
+dev-dist
+.vscode/*
+!.vscode/extensions.json
+
+# Android / APK
+android/
+*.apk
+*.aab
+release/
+.idea/

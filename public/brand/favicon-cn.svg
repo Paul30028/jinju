@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <linearGradient id="cnBg" x1="80" y1="40" x2="440" y2="480" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1a3a38"/>
+      <stop offset="0.55" stop-color="#2a4f4a"/>
+      <stop offset="1" stop-color="#3d3a32"/>
+    </linearGradient>
+    <linearGradient id="cnOrb" x1="180" y1="150" x2="340" y2="360" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f3e6c8"/>
+      <stop offset="0.45" stop-color="#d4b896"/>
+      <stop offset="1" stop-color="#8a9e8e"/>
+    </linearGradient>
+    <radialGradient id="cnGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(248 230) rotate(90) scale(140)">
+      <stop stop-color="#fff8e8" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#d4b896" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <!-- rounded app square -->
+  <rect width="512" height="512" rx="114" fill="url(#cnBg)"/>
+  <!-- soft glow -->
+  <circle cx="248" cy="236" r="150" fill="url(#cnGlow)"/>
+  <!-- main orb -->
+  <circle cx="250" cy="240" r="92" fill="url(#cnOrb)"/>
+  <!-- quiet arc (dawn) -->
+  <path d="M150 278c28-78 92-118 170-108" stroke="#e8d5b0" stroke-width="18" stroke-linecap="round" opacity="0.85"/>
+  <!-- tiny highlight -->
+  <circle cx="220" cy="205" r="18" fill="#fffaf0" opacity="0.55"/>
+</svg>

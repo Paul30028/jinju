@@ -1,0 +1,50 @@
+{
+  "name": "serein",
+  "private": true,
+  "version": "0.2.0",
+  "type": "module",
+  "description": "Serein — dual-region (CN 静澄 / International) daily quiet line app",
+  "scripts": {
+    "dev": "vite --mode cn",
+    "dev:cn": "vite --mode cn",
+    "dev:intl": "vite --mode intl",
+    "build": "npm run build:cn",
+    "build:cn": "tsc --noEmit && vite build --mode cn",
+    "build:intl": "tsc --noEmit && vite build --mode intl",
+    "build:android": "npm run build:android:cn",
+    "build:android:cn": "tsc --noEmit && vite build --mode cn && npx cap copy android && node scripts/apply-capacitor-region.mjs cn",
+    "build:android:intl": "tsc --noEmit && vite build --mode intl && npx cap copy android && node scripts/apply-capacitor-region.mjs intl",
+    "preview": "vite preview --mode cn",
+    "preview:intl": "vite preview --mode intl",
+    "check": "tsc --noEmit",
+    "lint": "tsc --noEmit",
+    "cap:add:android": "npx cap add android",
+    "cap:sync": "npx cap sync",
+    "cap:open:android": "npx cap open android",
+    "android": "npm run build:android:cn && npx cap open android",
+    "android:intl": "npm run build:android:intl && npx cap open android",
+    "apk": "node scripts/build-apk-node.mjs"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.2.0",
+    "@capacitor/app": "^7.0.1",
+    "@capacitor/core": "^7.2.0",
+    "@capacitor/filesystem": "^7.1.1",
+    "@capacitor/share": "^7.0.1",
+    "@capacitor/splash-screen": "^7.0.1",
+    "@capacitor/status-bar": "^7.0.1",
+    "idb-keyval": "^6.2.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "wouter": "^3.3.5"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.2.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "~5.7.2",
+    "vite": "^6.0.0",
+    "vite-plugin-pwa": "^0.21.1"
+  }
+}

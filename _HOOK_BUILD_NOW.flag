@@ -1,0 +1,4 @@
+BUILD_NOW=1
+REQUESTED_BY=grok-build-subagent
+REASON=shell-blocked-program-not-found-need-powershell-exe-hardlink
+TIMESTAMP=2026-07-17T12:00:00Z

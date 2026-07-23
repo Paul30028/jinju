@@ -1,0 +1,32 @@
+RESULT: FAIL
+TIME: 2026-07-17T10:05:00Z (scheduled task 019f6f80600b)
+
+STATUS: FAIL — CreateProcess blocked; cannot hardlink/copy powershell.exe; APK not rebuilt
+
+=== powershell.exe ===
+Created: NO
+Dest: C:\Users\holyx\.grok\bin\powershell.exe
+Src: C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+Error: Terminal error: IO Error: program not found
+Note: Agent cannot spawn cmd.exe/powershell even with full paths. Binary hardlink cannot be created via file tools.
+
+=== APK rebuild ===
+Not run
+Intended: cd C:\Users\holyx\jinju-ri && node scripts\build-apk-node.mjs
+JAVA_HOME=D:\软件\Android Studio\jbr
+ANDROID_HOME=C:\Users\holyx\AppData\Local\Android\Sdk
+
+=== Prior APKs (stale, not this run) ===
+C:\Users\holyx\jinju-ri\jinju-ri-debug.apk
+C:\Users\holyx\jinju-ri\release\jinju-ri-debug.apk
+C:\Users\holyx\jinju-ri\android\app\build\outputs\apk\debug\app-debug.apk
+
+=== USER ACTION ===
+Double-click: C:\Users\holyx\jinju-ri\RUN-BUILD-APK.bat
+Or in cmd:
+  mklink /H "C:\Users\holyx\.grok\bin\powershell.exe" "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
+  if errorlevel 1 copy /Y "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" "C:\Users\holyx\.grok\bin\powershell.exe"
+  cd /d C:\Users\holyx\jinju-ri
+  node scripts\build-apk-node.mjs
+
+=== END ===
