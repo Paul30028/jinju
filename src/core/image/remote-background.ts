@@ -66,6 +66,7 @@ const MAX_IMAGE_CACHE_BYTES = 45 * 1024 * 1024;
 const MAX_THEME_FALLBACK_ITEMS = 10;
 const TOTAL_THEME_PHOTO_TIMEOUT_MS = 10_000;
 const COPYRIGHT_FREE_PROVIDER_LIMIT = 18;
+const PROVIDER_PAGE_LOOKAHEAD = 5;
 
 type CopyrightFreeProvider = "wikimedia" | "nasa" | "artic";
 
@@ -470,7 +471,9 @@ export function countThemeImages(
   catalog: BgCatalog,
   themeId: string,
 ): number {
-  return filterItemsByThemeStrict(catalog, themeId).length + COPYRIGHT_FREE_PROVIDER_LIMIT;
+  void catalog;
+  void themeId;
+  return COPYRIGHT_FREE_PROVIDER_LIMIT * PROVIDER_PAGE_LOOKAHEAD;
 }
 
 /**
@@ -603,6 +606,7 @@ export async function loadThemePhotoStrict(options: {
     ) {
       continue;
     }
+    rememberUsedBg(options.themeId, item.id);
     const loaded = await loadPhotoWithFallback(
       item,
       options.width,
@@ -612,7 +616,6 @@ export async function loadThemePhotoStrict(options: {
     );
     allTried.push(...loaded.tried);
     if (loaded.img) {
-      rememberUsedBg(options.themeId, item.id);
       return {
         ...loaded,
         itemId: item.id,
@@ -639,27 +642,44 @@ async function buildThemePhotoPool(options: {
   variation: number;
   excludeItemId?: string;
 }): Promise<BgCatalogItem[]> {
-  const localPool = filterItemsByThemeStrict(options.catalog, options.themeId);
-  const dynamicPool = await loadCopyrightFreeProviderItems(
-    options.themeId,
-    getProviderPage(options.themeId),
-  );
-  const all = dedupeItems([...dynamicPool, ...localPool]);
   const used = new Set(readUsedBgState().seen[options.themeId] ?? []);
-  const fresh = all.filter(
-    (item) => item.id !== options.excludeItemId && !used.has(item.id),
+  const basePage = Math.max(
+    getProviderPage(options.themeId),
+    Math.floor(Math.max(0, options.variation) / COPYRIGHT_FREE_PROVIDER_LIMIT),
   );
 
-  if (fresh.length) return fresh;
+  for (let offset = 0; offset < PROVIDER_PAGE_LOOKAHEAD; offset++) {
+    const page = basePage + offset;
+    const dynamicPool = await loadCopyrightFreeProviderItems(
+      options.themeId,
+      page,
+    );
+    const fresh = dedupeItems(dynamicPool).filter(
+      (item) => item.id !== options.excludeItemId && !used.has(item.id),
+    );
+    if (fresh.length) {
+      rememberProviderPage(options.themeId, page);
+      return fresh;
+    }
+  }
 
-  const nextDynamic = await loadCopyrightFreeProviderItems(
-    options.themeId,
-    bumpProviderPage(options.themeId),
-  );
-  const nextFresh = dedupeItems(nextDynamic).filter(
-    (item) => item.id !== options.excludeItemId && !used.has(item.id),
-  );
-  return nextFresh;
+  const nextPage = bumpProviderPage(options.themeId);
+  for (let offset = 0; offset < PROVIDER_PAGE_LOOKAHEAD; offset++) {
+    const page = nextPage + offset;
+    const dynamicPool = await loadCopyrightFreeProviderItems(
+      options.themeId,
+      page,
+    );
+    const fresh = dedupeItems(dynamicPool).filter(
+      (item) => item.id !== options.excludeItemId && !used.has(item.id),
+    );
+    if (fresh.length) {
+      rememberProviderPage(options.themeId, page);
+      return fresh;
+    }
+  }
+
+  return [];
 }
 
 function dedupeItems(items: BgCatalogItem[]): BgCatalogItem[] {
@@ -901,6 +921,12 @@ function bumpProviderPage(themeId: string): number {
   state.page[themeId] = next;
   writeUsedBgState(state);
   return next;
+}
+
+function rememberProviderPage(themeId: string, page: number): void {
+  const state = readUsedBgState();
+  state.page[themeId] = Math.max(0, page);
+  writeUsedBgState(state);
 }
 
 const memoryImageCache = new Map<string, HTMLImageElement>();
