@@ -1,4 +1,5 @@
 import data from "../../data/lectionary-readings.json";
+import pct2026 from "../../data/pct-lectionary-2026.json";
 import type { LectionaryYear, LiturgicalContext } from "./calendar";
 import { getLiturgicalContext } from "./calendar";
 import type { Verse } from "../types";
@@ -22,12 +23,61 @@ export interface LectionaryPack {
 }
 
 type YearTable = Record<string, { title: string; readings: LectionaryReading[] }>;
+type DatedReading = {
+  title: string;
+  seasonLabel?: string;
+  readings: LectionaryReading[];
+};
 
 const TABLE = data as Record<LectionaryYear, YearTable>;
+const PCT_2026 = pct2026 as Record<string, DatedReading>;
+const PCT_DATES = Object.keys(PCT_2026).sort();
 
 export function getReadingsForDate(date?: string): LectionaryPack {
   const ctx = getLiturgicalContext(date ?? new Date());
+  const pct = findActivePctReading(ctx.date);
+  if (pct) return buildPctPack(ctx, pct.date, pct.entry);
   return resolvePack(ctx);
+}
+
+function findActivePctReading(
+  date: string,
+): { date: string; entry: DatedReading } | null {
+  let activeDate: string | null = null;
+  for (const candidate of PCT_DATES) {
+    if (candidate > date) break;
+    activeDate = candidate;
+  }
+  if (!activeDate || daysBetweenYmd(activeDate, date) > 6) return null;
+  const entry = PCT_2026[activeDate];
+  return entry ? { date: activeDate, entry } : null;
+}
+
+function buildPctPack(
+  ctx: LiturgicalContext,
+  date: string,
+  entry: DatedReading,
+): LectionaryPack {
+  return {
+    title: entry.title,
+    year: ctx.lectionaryYear,
+    weekKey: `pct-${date}`,
+    seasonLabel: entry.seasonLabel ?? ctx.seasonLabel,
+    label: `${entry.title} · 经课年 ${ctx.lectionaryYear}`,
+    readings: entry.readings,
+    exact: true,
+  };
+}
+
+function daysBetweenYmd(from: string, to: string): number {
+  const a = parseUtcYmd(from);
+  const b = parseUtcYmd(to);
+  return Math.floor((b.getTime() - a.getTime()) / 86400000);
+}
+
+function parseUtcYmd(value: string): Date {
+  const [year = 1970, month = 1, day = 1] = value.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, day));
 }
 
 function resolvePack(ctx: LiturgicalContext): LectionaryPack {
