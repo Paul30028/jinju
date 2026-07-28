@@ -69,7 +69,13 @@ const COPYRIGHT_FREE_PROVIDER_LIMIT = 18;
 const PROVIDER_PAGE_LOOKAHEAD = 5;
 const NON_REPEATING_PROVIDER_WINDOW = 300;
 
-type CopyrightFreeProvider = "wikimedia" | "nasa" | "met";
+type CopyrightFreeProvider =
+  | "pixabay"
+  | "pexels"
+  | "unsplash"
+  | "wikimedia"
+  | "nasa"
+  | "met";
 
 interface UsedBgState {
   seen: Record<string, string[]>;
@@ -701,7 +707,14 @@ async function loadCopyrightFreeProviderItems(
   themeId: string,
   page: number,
 ): Promise<BgCatalogItem[]> {
-  const providers: CopyrightFreeProvider[] = ["wikimedia", "nasa", "met"];
+  const providers: CopyrightFreeProvider[] = [
+    "pixabay",
+    "pexels",
+    "unsplash",
+    "wikimedia",
+    "nasa",
+    "met",
+  ];
   const settled = await Promise.allSettled(
     providers.map((provider) =>
       fetchCopyrightFreeProvider(provider, themeId, page),
@@ -718,6 +731,12 @@ async function fetchCopyrightFreeProvider(
   page: number,
 ): Promise<BgCatalogItem[]> {
   switch (provider) {
+    case "pixabay":
+      return fetchPixabayImages(themeId, page);
+    case "pexels":
+      return fetchPexelsImages(themeId, page);
+    case "unsplash":
+      return fetchUnsplashImages(themeId, page);
     case "wikimedia":
       return fetchWikimediaPublicDomain(themeId, page);
     case "nasa":
@@ -725,6 +744,134 @@ async function fetchCopyrightFreeProvider(
     case "met":
       return fetchMetPublicDomain(themeId, page);
   }
+}
+
+async function fetchPixabayImages(
+  themeId: string,
+  page: number,
+): Promise<BgCatalogItem[]> {
+  const key = getPixabayApiKey();
+  if (!key) return [];
+  const url = new URL("https://pixabay.com/api/");
+  url.searchParams.set("key", key);
+  url.searchParams.set("q", themeSearchTerm(themeId));
+  url.searchParams.set("image_type", "photo");
+  url.searchParams.set("orientation", "vertical");
+  url.searchParams.set("safesearch", "true");
+  url.searchParams.set("per_page", "12");
+  url.searchParams.set("page", String(page + 1));
+
+  const data = await fetchJson<{
+    hits?: {
+      id?: number;
+      largeImageURL?: string;
+      webformatURL?: string;
+      pageURL?: string;
+      tags?: string;
+    }[];
+  }>(url.toString());
+
+  return (data.hits ?? [])
+    .map((item) =>
+      providerItem({
+        provider: "pixabay",
+        themeId,
+        id: String(item.id || item.pageURL || item.largeImageURL || ""),
+        url: item.largeImageURL || item.webformatURL || "",
+        credit: "Pixabay Content License",
+      }),
+    )
+    .filter((item): item is BgCatalogItem => Boolean(item));
+}
+
+async function fetchPexelsImages(
+  themeId: string,
+  page: number,
+): Promise<BgCatalogItem[]> {
+  const key = getPexelsApiKey();
+  if (!key) return [];
+  const url = new URL("https://api.pexels.com/v1/search");
+  url.searchParams.set("query", themeSearchTerm(themeId));
+  url.searchParams.set("orientation", "portrait");
+  url.searchParams.set("per_page", "12");
+  url.searchParams.set("page", String(page + 1));
+
+  const data = await fetchJson<{
+    photos?: {
+      id?: number;
+      photographer?: string;
+      src?: {
+        large2x?: string;
+        large?: string;
+        portrait?: string;
+        original?: string;
+      };
+    }[];
+  }>(url.toString(), {
+    Authorization: key,
+  });
+
+  return (data.photos ?? [])
+    .map((item) =>
+      providerItem({
+        provider: "pexels",
+        themeId,
+        id: String(item.id || item.src?.portrait || ""),
+        url:
+          item.src?.large2x ||
+          item.src?.portrait ||
+          item.src?.large ||
+          item.src?.original ||
+          "",
+        credit: item.photographer
+          ? `Pexels · ${item.photographer}`
+          : "Pexels License",
+      }),
+    )
+    .filter((item): item is BgCatalogItem => Boolean(item));
+}
+
+async function fetchUnsplashImages(
+  themeId: string,
+  page: number,
+): Promise<BgCatalogItem[]> {
+  const key = getUnsplashAccessKey();
+  if (!key) return [];
+  const url = new URL("https://api.unsplash.com/search/photos");
+  url.searchParams.set("query", themeSearchTerm(themeId));
+  url.searchParams.set("orientation", "portrait");
+  url.searchParams.set("content_filter", "high");
+  url.searchParams.set("per_page", "12");
+  url.searchParams.set("page", String(page + 1));
+
+  const data = await fetchJson<{
+    results?: {
+      id?: string;
+      alt_description?: string;
+      user?: { name?: string };
+      urls?: {
+        regular?: string;
+        full?: string;
+        raw?: string;
+      };
+    }[];
+  }>(url.toString(), {
+    Authorization: `Client-ID ${key}`,
+  });
+
+  return (data.results ?? [])
+    .map((item) =>
+      providerItem({
+        provider: "unsplash",
+        themeId,
+        id: item.id || item.urls?.regular || "",
+        url: item.urls?.regular || item.urls?.full || item.urls?.raw || "",
+        credit: item.user?.name
+          ? `Unsplash · ${item.user.name}`
+          : "Unsplash License",
+      }),
+    )
+    .filter((item): item is BgCatalogItem => Boolean(item));
 }
 
 async function fetchWikimediaPublicDomain(
@@ -878,13 +1025,17 @@ function providerItem(input: {
   };
 }
 
-async function fetchJson<T>(url: string): Promise<T> {
+async function fetchJson<T>(
+  url: string,
+  headers: Record<string, string> = {},
+): Promise<T> {
   const ctrl = new AbortController();
   const timer = window.setTimeout(() => ctrl.abort(), 3500);
   try {
     const res = await fetch(url, {
       signal: ctrl.signal,
       cache: "default",
+      headers,
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return (await res.json()) as T;
@@ -895,6 +1046,20 @@ async function fetchJson<T>(url: string): Promise<T> {
 
 function themeSearchTerm(themeId: string): string {
   return THEME_SEARCH_TERMS[themeId] || "peaceful nature landscape";
+}
+
+function getPixabayApiKey(): string {
+  return ((import.meta.env.VITE_PIXABAY_API_KEY as string | undefined) || "").trim();
+}
+
+function getPexelsApiKey(): string {
+  return ((import.meta.env.VITE_PEXELS_API_KEY as string | undefined) || "").trim();
+}
+
+function getUnsplashAccessKey(): string {
+  return (
+    (import.meta.env.VITE_UNSPLASH_ACCESS_KEY as string | undefined) || ""
+  ).trim();
 }
 
 function readUsedBgState(): UsedBgState {
