@@ -59,6 +59,31 @@ export interface LoadPhotoResult {
 const CATALOG_CACHE_KEY = "jinju-ri:bg-catalog:v2";
 const CATALOG_META_KEY = "jinju-ri:bg-catalog-meta:v2";
 const IMAGE_CACHE_PREFIX = "jinju-ri:bg-img:v2:";
+const IMAGE_CACHE_NAME = "jinju-bg-v2";
+const USED_BG_KEY = "jinju-ri:bg-used:v1";
+const MAX_IMAGE_CACHE_ENTRIES = 24;
+const MAX_IMAGE_CACHE_BYTES = 45 * 1024 * 1024;
+const MAX_THEME_FALLBACK_ITEMS = 10;
+const TOTAL_THEME_PHOTO_TIMEOUT_MS = 10_000;
+const COPYRIGHT_FREE_PROVIDER_LIMIT = 18;
+
+type CopyrightFreeProvider = "wikimedia" | "nasa" | "artic";
+
+interface UsedBgState {
+  seen: Record<string, string[]>;
+  page: Record<string, number>;
+}
+
+const THEME_SEARCH_TERMS: Record<string, string> = {
+  dawn: "sunrise landscape",
+  night: "night sky stars",
+  wilderness: "desert wilderness landscape",
+  mist: "mist mountain forest",
+  parchment: "ancient manuscript parchment",
+  sanctuary: "church interior architecture",
+  olive: "olive tree landscape",
+  river: "river landscape water",
+};
 
 /**
  * 已知含人物正面/人像特写/举手人群的 Unsplash photo id（硬拦截）
@@ -445,7 +470,7 @@ export function countThemeImages(
   catalog: BgCatalog,
   themeId: string,
 ): number {
-  return filterItemsByThemeStrict(catalog, themeId).length;
+  return filterItemsByThemeStrict(catalog, themeId).length + COPYRIGHT_FREE_PROVIDER_LIMIT;
 }
 
 /**
@@ -540,7 +565,7 @@ export async function loadThemePhotoStrict(options: {
   /** 上一张已展示的条目 id；重新生成时强制跳过 */
   excludeItemId?: string;
 }): Promise<LoadPhotoResult & { itemId?: string; poolSize: number }> {
-  const pool = filterItemsByThemeStrict(options.catalog, options.themeId);
+  const pool = await buildThemePhotoPool(options);
   if (!pool.length) {
     return {
       img: null,
@@ -561,8 +586,13 @@ export async function loadThemePhotoStrict(options: {
   );
 
   const allTried: LoadPhotoResult["tried"] = [];
-  // 最多试完本主题全部条目；每条目只用同图主源+代理
-  for (let step = 0; step < pool.length; step++) {
+  const startedAt = Date.now();
+  const maxSteps = Math.min(pool.length, MAX_THEME_FALLBACK_ITEMS);
+  // 最多试少量同主题条目；每条目只用同图主源+代理，并受总时限控制
+  for (let step = 0; step < maxSteps; step++) {
+    const remainingMs =
+      TOTAL_THEME_PHOTO_TIMEOUT_MS - (Date.now() - startedAt);
+    if (remainingMs <= 0) break;
     const item = pool[(start + step) % pool.length]!;
     // 第一步已按 exclude 跳过；后续若仍命中 exclude（池=1）可接受
     if (
@@ -577,11 +607,12 @@ export async function loadThemePhotoStrict(options: {
       item,
       options.width,
       options.height,
-      options.timeoutMs ?? 7000,
+      Math.min(options.timeoutMs ?? 3500, remainingMs),
       { samePhotoOnly: true },
     );
     allTried.push(...loaded.tried);
     if (loaded.img) {
+      rememberUsedBg(options.themeId, item.id);
       return {
         ...loaded,
         itemId: item.id,
@@ -599,6 +630,277 @@ export async function loadThemePhotoStrict(options: {
     tried: allTried,
     poolSize: pool.length,
   };
+}
+
+async function buildThemePhotoPool(options: {
+  catalog: BgCatalog;
+  themeId: string;
+  date: string;
+  variation: number;
+  excludeItemId?: string;
+}): Promise<BgCatalogItem[]> {
+  const localPool = filterItemsByThemeStrict(options.catalog, options.themeId);
+  const dynamicPool = await loadCopyrightFreeProviderItems(
+    options.themeId,
+    getProviderPage(options.themeId),
+  );
+  const all = dedupeItems([...dynamicPool, ...localPool]);
+  const used = new Set(readUsedBgState().seen[options.themeId] ?? []);
+  const fresh = all.filter(
+    (item) => item.id !== options.excludeItemId && !used.has(item.id),
+  );
+
+  if (fresh.length) return fresh;
+
+  const nextDynamic = await loadCopyrightFreeProviderItems(
+    options.themeId,
+    bumpProviderPage(options.themeId),
+  );
+  const nextFresh = dedupeItems(nextDynamic).filter(
+    (item) => item.id !== options.excludeItemId && !used.has(item.id),
+  );
+  return nextFresh;
+}
+
+function dedupeItems(items: BgCatalogItem[]): BgCatalogItem[] {
+  const seen = new Set<string>();
+  const out: BgCatalogItem[] = [];
+  for (const item of items) {
+    const key = item.id || item.url;
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    out.push(item);
+  }
+  return out;
+}
+
+async function loadCopyrightFreeProviderItems(
+  themeId: string,
+  page: number,
+): Promise<BgCatalogItem[]> {
+  const providers: CopyrightFreeProvider[] = ["wikimedia", "nasa", "artic"];
+  const settled = await Promise.allSettled(
+    providers.map((provider) =>
+      fetchCopyrightFreeProvider(provider, themeId, page),
+    ),
+  );
+  return settled
+    .flatMap((result) => (result.status === "fulfilled" ? result.value : []))
+    .filter((item) => !!item.url && !isRandomPlaceholderUrl(item.url));
+}
+
+async function fetchCopyrightFreeProvider(
+  provider: CopyrightFreeProvider,
+  themeId: string,
+  page: number,
+): Promise<BgCatalogItem[]> {
+  switch (provider) {
+    case "wikimedia":
+      return fetchWikimediaPublicDomain(themeId, page);
+    case "nasa":
+      return fetchNasaImages(themeId, page);
+    case "artic":
+      return fetchArticPublicDomain(themeId, page);
+  }
+}
+
+async function fetchWikimediaPublicDomain(
+  themeId: string,
+  page: number,
+): Promise<BgCatalogItem[]> {
+  const term = themeSearchTerm(themeId);
+  const url = new URL("https://commons.wikimedia.org/w/api.php");
+  url.searchParams.set("action", "query");
+  url.searchParams.set("format", "json");
+  url.searchParams.set("origin", "*");
+  url.searchParams.set("generator", "search");
+  url.searchParams.set("gsrnamespace", "6");
+  url.searchParams.set("gsrsearch", `${term} filetype:bitmap`);
+  url.searchParams.set("gsrlimit", "8");
+  url.searchParams.set("gsroffset", String(Math.max(0, page) * 8));
+  url.searchParams.set("prop", "imageinfo");
+  url.searchParams.set("iiprop", "url|extmetadata");
+
+  const data = await fetchJson<{
+    query?: {
+      pages?: Record<
+        string,
+        {
+          title?: string;
+          imageinfo?: {
+            url?: string;
+            extmetadata?: Record<string, { value?: string }>;
+          }[];
+        }
+      >;
+    };
+  }>(url.toString());
+
+  return Object.values(data.query?.pages ?? {})
+    .map((pageItem) => {
+      const info = pageItem.imageinfo?.[0];
+      const license = String(
+        info?.extmetadata?.LicenseShortName?.value ||
+          info?.extmetadata?.UsageTerms?.value ||
+          "",
+      );
+      if (!/public domain|cc0/i.test(license)) return null;
+      return providerItem({
+        provider: "wikimedia",
+        themeId,
+        id: pageItem.title || info?.url || "",
+        url: info?.url || "",
+        credit: "Wikimedia Commons public domain/CC0",
+      });
+    })
+    .filter((item): item is BgCatalogItem => Boolean(item));
+}
+
+async function fetchNasaImages(
+  themeId: string,
+  page: number,
+): Promise<BgCatalogItem[]> {
+  const term = themeSearchTerm(themeId);
+  const url = new URL("https://images-api.nasa.gov/search");
+  url.searchParams.set("q", term);
+  url.searchParams.set("media_type", "image");
+  url.searchParams.set("page", String(page + 1));
+
+  const data = await fetchJson<{
+    collection?: {
+      items?: {
+        data?: { nasa_id?: string; title?: string }[];
+        links?: { href?: string }[];
+      }[];
+    };
+  }>(url.toString());
+
+  return (data.collection?.items ?? [])
+    .slice(0, 6)
+    .map((item) =>
+      providerItem({
+        provider: "nasa",
+        themeId,
+        id: item.data?.[0]?.nasa_id || item.links?.[0]?.href || "",
+        url: item.links?.[0]?.href || "",
+        credit: "NASA Images",
+      }),
+    )
+    .filter((item): item is BgCatalogItem => Boolean(item));
+}
+
+async function fetchArticPublicDomain(
+  themeId: string,
+  page: number,
+): Promise<BgCatalogItem[]> {
+  const term = themeSearchTerm(themeId);
+  const url = new URL("https://api.artic.edu/api/v1/artworks/search");
+  url.searchParams.set("q", term);
+  url.searchParams.set("page", String(page + 1));
+  url.searchParams.set("limit", "6");
+  url.searchParams.set("fields", "id,title,image_id,is_public_domain");
+  url.searchParams.set("query[term][is_public_domain]", "true");
+
+  const data = await fetchJson<{
+    data?: {
+      id?: number;
+      title?: string;
+      image_id?: string;
+      is_public_domain?: boolean;
+    }[];
+  }>(url.toString());
+
+  return (data.data ?? [])
+    .filter((item) => item.is_public_domain && item.image_id)
+    .map((item) =>
+      providerItem({
+        provider: "artic",
+        themeId,
+        id: String(item.id || item.image_id),
+        url: `https://www.artic.edu/iiif/2/${item.image_id}/full/1600,/0/default.jpg`,
+        credit: "Art Institute of Chicago public domain",
+      }),
+    )
+    .filter((item): item is BgCatalogItem => Boolean(item));
+}
+
+function providerItem(input: {
+  provider: CopyrightFreeProvider;
+  themeId: string;
+  id: string;
+  url: string;
+  credit: string;
+}): BgCatalogItem | null {
+  if (!input.id || !input.url) return null;
+  return {
+    id: `cf-${input.provider}-${input.themeId}-${hashString(input.id)}`,
+    themes: [input.themeId],
+    tags: ["copyright-free", input.provider],
+    url: input.url,
+    credit: input.credit,
+  };
+}
+
+async function fetchJson<T>(url: string): Promise<T> {
+  const ctrl = new AbortController();
+  const timer = window.setTimeout(() => ctrl.abort(), 3500);
+  try {
+    const res = await fetch(url, {
+      signal: ctrl.signal,
+      cache: "default",
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return (await res.json()) as T;
+  } finally {
+    window.clearTimeout(timer);
+  }
+}
+
+function themeSearchTerm(themeId: string): string {
+  return THEME_SEARCH_TERMS[themeId] || "peaceful nature landscape";
+}
+
+function readUsedBgState(): UsedBgState {
+  try {
+    const raw = sessionStorage.getItem(USED_BG_KEY);
+    if (!raw) return { seen: {}, page: {} };
+    const parsed = JSON.parse(raw) as Partial<UsedBgState>;
+    return {
+      seen: parsed.seen && typeof parsed.seen === "object" ? parsed.seen : {},
+      page: parsed.page && typeof parsed.page === "object" ? parsed.page : {},
+    };
+  } catch {
+    return { seen: {}, page: {} };
+  }
+}
+
+function writeUsedBgState(state: UsedBgState): void {
+  try {
+    sessionStorage.setItem(USED_BG_KEY, JSON.stringify(state));
+  } catch {
+    // ignore
+  }
+}
+
+function rememberUsedBg(themeId: string, itemId: string): void {
+  const state = readUsedBgState();
+  const list = state.seen[themeId] ?? [];
+  if (!list.includes(itemId)) {
+    state.seen[themeId] = [...list, itemId].slice(-120);
+    writeUsedBgState(state);
+  }
+}
+
+function getProviderPage(themeId: string): number {
+  return Math.max(0, readUsedBgState().page[themeId] ?? 0);
+}
+
+function bumpProviderPage(themeId: string): number {
+  const state = readUsedBgState();
+  const next = Math.max(0, state.page[themeId] ?? 0) + 1;
+  state.page[themeId] = next;
+  writeUsedBgState(state);
+  return next;
 }
 
 const memoryImageCache = new Map<string, HTMLImageElement>();
@@ -621,40 +923,29 @@ export async function loadBackgroundImage(
     // ignore
   }
 
-  const img = await fetchImage(url, timeoutMs);
+  const blob = await fetchImageBlob(url, timeoutMs);
+  await writeImageCache(url, blob);
+  const img = await blobToImage(blob);
   memoryImageCache.set(url, img);
-
-  try {
-    const res = await fetch(url, { mode: "cors" });
-    if (res.ok) {
-      const blob = await res.blob();
-      await writeImageCache(url, blob);
-    }
-  } catch {
-    // ignore
-  }
 
   return img;
 }
 
-function fetchImage(url: string, timeoutMs: number): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    const timer = window.setTimeout(() => {
-      reject(new Error("timeout"));
-    }, timeoutMs);
-    img.onload = () => {
-      window.clearTimeout(timer);
-      if (img.naturalWidth < 1) reject(new Error("invalid dimensions"));
-      else resolve(img);
-    };
-    img.onerror = () => {
-      window.clearTimeout(timer);
-      reject(new Error("onerror"));
-    };
-    img.src = url;
-  });
+async function fetchImageBlob(url: string, timeoutMs: number): Promise<Blob> {
+  const ctrl = new AbortController();
+  const timer = window.setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, {
+      mode: "cors",
+      signal: ctrl.signal,
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const blob = await res.blob();
+    if (!blob.size) throw new Error("empty image");
+    return blob;
+  } finally {
+    window.clearTimeout(timer);
+  }
 }
 
 function blobToImage(blob: Blob): Promise<HTMLImageElement> {
@@ -675,7 +966,7 @@ function blobToImage(blob: Blob): Promise<HTMLImageElement> {
 
 async function readImageCache(url: string): Promise<Blob | null> {
   if (!("caches" in window)) return null;
-  const cache = await caches.open("jinju-bg-v2");
+  const cache = await caches.open(IMAGE_CACHE_NAME);
   const res = await cache.match(IMAGE_CACHE_PREFIX + encodeURIComponent(url));
   if (!res) return null;
   return res.blob();
@@ -683,13 +974,49 @@ async function readImageCache(url: string): Promise<Blob | null> {
 
 async function writeImageCache(url: string, blob: Blob): Promise<void> {
   if (!("caches" in window)) return;
-  const cache = await caches.open("jinju-bg-v2");
+  const cache = await caches.open(IMAGE_CACHE_NAME);
   await cache.put(
     IMAGE_CACHE_PREFIX + encodeURIComponent(url),
     new Response(blob, {
-      headers: { "Content-Type": blob.type || "image/jpeg" },
+      headers: {
+        "Content-Type": blob.type || "image/jpeg",
+        "Content-Length": String(blob.size),
+        "X-Jinju-Cached-At": String(Date.now()),
+      },
     }),
   );
+  await trimImageCache(cache);
+}
+
+async function trimImageCache(cache: Cache): Promise<void> {
+  try {
+    const requests = await cache.keys();
+    const entries = await Promise.all(
+      requests
+        .filter((request) => request.url.includes(IMAGE_CACHE_PREFIX))
+        .map(async (request) => {
+          const res = await cache.match(request);
+          const cachedAt = Number(res?.headers.get("X-Jinju-Cached-At") || "0");
+          const declared = Number(res?.headers.get("Content-Length") || "0");
+          const size = declared || (res ? (await res.clone().blob()).size : 0);
+          return { request, cachedAt, size };
+        }),
+    );
+
+    entries.sort((a, b) => a.cachedAt - b.cachedAt);
+    let total = entries.reduce((sum, item) => sum + item.size, 0);
+    while (
+      entries.length > MAX_IMAGE_CACHE_ENTRIES ||
+      total > MAX_IMAGE_CACHE_BYTES
+    ) {
+      const oldest = entries.shift();
+      if (!oldest) break;
+      await cache.delete(oldest.request);
+      total -= oldest.size;
+    }
+  } catch {
+    // cache eviction is best-effort
+  }
 }
 
 function readCachedCatalog(): BgCatalog | null {
