@@ -67,6 +67,7 @@ const MAX_THEME_FALLBACK_ITEMS = 10;
 const TOTAL_THEME_PHOTO_TIMEOUT_MS = 10_000;
 const COPYRIGHT_FREE_PROVIDER_LIMIT = 18;
 const PROVIDER_PAGE_LOOKAHEAD = 5;
+const NON_REPEATING_PROVIDER_WINDOW = 300;
 
 type CopyrightFreeProvider = "wikimedia" | "nasa" | "artic";
 
@@ -606,7 +607,7 @@ export async function loadThemePhotoStrict(options: {
     ) {
       continue;
     }
-    rememberUsedBg(options.themeId, item.id);
+    rememberUsedBgItem(options.themeId, item);
     const loaded = await loadPhotoWithFallback(
       item,
       options.width,
@@ -645,7 +646,7 @@ async function buildThemePhotoPool(options: {
   const used = new Set(readUsedBgState().seen[options.themeId] ?? []);
   const basePage = Math.max(
     getProviderPage(options.themeId),
-    Math.floor(Math.max(0, options.variation) / COPYRIGHT_FREE_PROVIDER_LIMIT),
+    Math.max(0, options.variation),
   );
 
   for (let offset = 0; offset < PROVIDER_PAGE_LOOKAHEAD; offset++) {
@@ -655,7 +656,8 @@ async function buildThemePhotoPool(options: {
       page,
     );
     const fresh = dedupeItems(dynamicPool).filter(
-      (item) => item.id !== options.excludeItemId && !used.has(item.id),
+      (item) =>
+        item.id !== options.excludeItemId && !hasUsedBgMarker(used, item),
     );
     if (fresh.length) {
       rememberProviderPage(options.themeId, page);
@@ -671,7 +673,8 @@ async function buildThemePhotoPool(options: {
       page,
     );
     const fresh = dedupeItems(dynamicPool).filter(
-      (item) => item.id !== options.excludeItemId && !used.has(item.id),
+      (item) =>
+        item.id !== options.excludeItemId && !hasUsedBgMarker(used, item),
     );
     if (fresh.length) {
       rememberProviderPage(options.themeId, page);
@@ -902,15 +905,6 @@ function writeUsedBgState(state: UsedBgState): void {
   }
 }
 
-function rememberUsedBg(themeId: string, itemId: string): void {
-  const state = readUsedBgState();
-  const list = state.seen[themeId] ?? [];
-  if (!list.includes(itemId)) {
-    state.seen[themeId] = [...list, itemId].slice(-120);
-    writeUsedBgState(state);
-  }
-}
-
 function getProviderPage(themeId: string): number {
   return Math.max(0, readUsedBgState().page[themeId] ?? 0);
 }
@@ -927,6 +921,22 @@ function rememberProviderPage(themeId: string, page: number): void {
   const state = readUsedBgState();
   state.page[themeId] = Math.max(0, page);
   writeUsedBgState(state);
+}
+
+function hasUsedBgMarker(used: Set<string>, item: BgCatalogItem): boolean {
+  return bgUsedMarkers(item).some((marker) => used.has(marker));
+}
+
+function rememberUsedBgItem(themeId: string, item: BgCatalogItem): void {
+  const state = readUsedBgState();
+  const next = new Set(state.seen[themeId] ?? []);
+  for (const marker of bgUsedMarkers(item)) next.add(marker);
+  state.seen[themeId] = Array.from(next).slice(-NON_REPEATING_PROVIDER_WINDOW);
+  writeUsedBgState(state);
+}
+
+function bgUsedMarkers(item: BgCatalogItem): string[] {
+  return [item.id, item.url, `url:${hashString(item.url)}`].filter(Boolean);
 }
 
 const memoryImageCache = new Map<string, HTMLImageElement>();
