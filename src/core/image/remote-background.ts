@@ -69,7 +69,7 @@ const COPYRIGHT_FREE_PROVIDER_LIMIT = 18;
 const PROVIDER_PAGE_LOOKAHEAD = 5;
 const NON_REPEATING_PROVIDER_WINDOW = 300;
 
-type CopyrightFreeProvider = "wikimedia" | "nasa" | "artic";
+type CopyrightFreeProvider = "wikimedia" | "nasa" | "met";
 
 interface UsedBgState {
   seen: Record<string, string[]>;
@@ -701,7 +701,7 @@ async function loadCopyrightFreeProviderItems(
   themeId: string,
   page: number,
 ): Promise<BgCatalogItem[]> {
-  const providers: CopyrightFreeProvider[] = ["wikimedia", "nasa", "artic"];
+  const providers: CopyrightFreeProvider[] = ["wikimedia", "nasa", "met"];
   const settled = await Promise.allSettled(
     providers.map((provider) =>
       fetchCopyrightFreeProvider(provider, themeId, page),
@@ -722,8 +722,8 @@ async function fetchCopyrightFreeProvider(
       return fetchWikimediaPublicDomain(themeId, page);
     case "nasa":
       return fetchNasaImages(themeId, page);
-    case "artic":
-      return fetchArticPublicDomain(themeId, page);
+    case "met":
+      return fetchMetPublicDomain(themeId, page);
   }
 }
 
@@ -805,45 +805,59 @@ async function fetchNasaImages(
         provider: "nasa",
         themeId,
         id: item.data?.[0]?.nasa_id || item.links?.[0]?.href || "",
-        url: item.links?.[0]?.href || "",
-        credit: "NASA Images",
+        url: item.links?.[0]?.href
+          ? buildWeservProxy(item.links[0].href, 1080, 1920)
+          : "",
+        credit: "NASA Images public domain",
       }),
     )
     .filter((item): item is BgCatalogItem => Boolean(item));
 }
 
-async function fetchArticPublicDomain(
+async function fetchMetPublicDomain(
   themeId: string,
   page: number,
 ): Promise<BgCatalogItem[]> {
   const term = themeSearchTerm(themeId);
-  const url = new URL("https://api.artic.edu/api/v1/artworks/search");
-  url.searchParams.set("q", term);
-  url.searchParams.set("page", String(page + 1));
-  url.searchParams.set("limit", "6");
-  url.searchParams.set("fields", "id,title,image_id,is_public_domain");
-  url.searchParams.set("query[term][is_public_domain]", "true");
+  const searchUrl = new URL(
+    "https://collectionapi.metmuseum.org/public/collection/v1/search",
+  );
+  searchUrl.searchParams.set("hasImages", "true");
+  searchUrl.searchParams.set("q", term);
 
-  const data = await fetchJson<{
-    data?: {
-      id?: number;
-      title?: string;
-      image_id?: string;
-      is_public_domain?: boolean;
-    }[];
-  }>(url.toString());
+  const search = await fetchJson<{ objectIDs?: number[] }>(searchUrl.toString());
+  const ids = (search.objectIDs ?? []).slice(page * 6, page * 6 + 6);
+  const objects = await Promise.allSettled(
+    ids.map((id) =>
+      fetchJson<{
+        objectID?: number;
+        title?: string;
+        isPublicDomain?: boolean;
+        primaryImage?: string;
+        primaryImageSmall?: string;
+      }>(
+        `https://collectionapi.metmuseum.org/public/collection/v1/objects/${id}`,
+      ),
+    ),
+  );
 
-  return (data.data ?? [])
-    .filter((item) => item.is_public_domain && item.image_id)
-    .map((item) =>
-      providerItem({
-        provider: "artic",
-        themeId,
-        id: String(item.id || item.image_id),
-        url: `https://www.artic.edu/iiif/2/${item.image_id}/full/1600,/0/default.jpg`,
-        credit: "Art Institute of Chicago public domain",
-      }),
+  return objects
+    .flatMap((result) =>
+      result.status === "fulfilled" ? [result.value] : [],
     )
+    .filter((item) => item.isPublicDomain)
+    .map((item) => {
+      const imageUrl = item.primaryImageSmall || item.primaryImage || "";
+      return imageUrl
+        ? providerItem({
+            provider: "met",
+            themeId,
+            id: String(item.objectID || imageUrl),
+            url: imageUrl,
+            credit: "The Met public domain",
+          })
+        : null;
+    })
     .filter((item): item is BgCatalogItem => Boolean(item));
 }
 
