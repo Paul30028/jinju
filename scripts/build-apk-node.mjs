@@ -86,7 +86,6 @@ function detectEnv() {
       break;
     }
   }
-  // Scan D:\*\Android Studio\jbr (handles Chinese folder names without hardcoding)
   if (!JAVA_HOME) {
     try {
       const dRoot = "D:\\";
@@ -121,7 +120,6 @@ function detectEnv() {
   return { JAVA_HOME, ANDROID_HOME };
 }
 
-/** Ensure Capacitor-generated gradle files exist (cap sync may be skipped/partial) */
 function ensureCapacitorGradleFiles(rootDir) {
   const settingsPath = path.join(rootDir, "android", "capacitor.settings.gradle");
   const buildPath = path.join(rootDir, "android", "app", "capacitor.build.gradle");
@@ -241,7 +239,6 @@ apply from: "cordova.variables.gradle"
     );
   }
 
-  // local.properties
   const sdk =
     process.env.ANDROID_HOME ||
     path.join(process.env.LOCALAPPDATA || "", "Android", "Sdk");
@@ -275,14 +272,7 @@ async function main() {
     return;
   }
 
-  // Fix incomplete android/ before Gradle (missing capacitor.settings.gradle etc.)
-  ensureCapacitorGradleFiles(root);
-
-  // local.properties (Gradle needs sdk.dir) — use forward slashes on Windows
   const sdkDirProp = ANDROID_HOME.replace(/\\/g, "/");
-  const lp = path.join(root, "android", "local.properties");
-  fs.writeFileSync(lp, `sdk.dir=${sdkDirProp}\n`, "utf8");
-  log(`Wrote ${lp} -> ${sdkDirProp}`);
 
   const env = {
     JAVA_HOME,
@@ -332,6 +322,12 @@ async function main() {
     log("\n[3/5] android project exists");
   }
 
+  ensureCapacitorGradleFiles(root);
+
+  const lp = path.join(root, "android", "local.properties");
+  fs.writeFileSync(lp, `sdk.dir=${sdkDirProp}\n`, "utf8");
+  log(`Wrote ${lp} -> ${sdkDirProp}`);
+
   log("\n[4/5] npx cap sync android");
   code = await run("npx", ["cap", "sync", "android"], { env });
   if (code !== 0) {
@@ -341,10 +337,7 @@ async function main() {
     log("cap sync OK");
   }
 
-  // Always ensure critical generated files exist (incomplete android/ is common)
   ensureCapacitorGradleFiles(root);
-
-  // re-write local.properties after cap sync (may overwrite)
   fs.writeFileSync(lp, `sdk.dir=${sdkDirProp}\n`, "utf8");
 
   log("\n[5/5] Gradle assembleDebug (may take 10-20 min first time)");

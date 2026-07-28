@@ -361,7 +361,7 @@ const zh: Dict = {
   "lectionary.extend": "本周使用季节延伸读经（完整主日表可继续扩充）",
   "lectionary.year": "经课年",
   "lectionary.note":
-    "说明：三代经课（RCL）分 A/B/C 三年循环。当前为本地精简表 + 季节回退。",
+    "说明：三代经课按日期切换；2026 年优先使用 PCT 经课表，其他日期使用本地经课年回退。",
   "theme.dawn": "黎明",
   "theme.night": "静夜",
   "theme.wilderness": "旷野",
@@ -584,7 +584,7 @@ const en: Dict = {
   "lectionary.extend": "Seasonal extension readings this week (full calendar expandable)",
   "lectionary.year": "Year",
   "lectionary.note":
-    "Revised Common Lectionary cycles A/B/C. Local compact table with seasonal fallback.",
+    "Readings change by date. PCT 2026 readings are preferred, with local lectionary-year fallback.",
   "theme.dawn": "Dawn",
   "theme.night": "Night",
   "theme.wilderness": "Wilderness",

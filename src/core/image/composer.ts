@@ -14,6 +14,7 @@ import { fitFontSize, wrapText } from "./wrap-text";
 import { hashDateSeed } from "../hash";
 import { uiT } from "../i18n";
 import { drawBrandWatermark } from "./watermark";
+import { getVerseTranslationLabel } from "../verse/translation-label";
 
 export interface ComposeInput {
   verse: Verse;
@@ -440,16 +441,17 @@ function formatReference(
 ): { main: string; sub: string } {
   const zhRef = (verse.reference || "").trim();
   const enRef = (verse.en?.reference || verse.referenceEn || "").trim();
+  const label = getVerseTranslationLabel(verse, mode);
   if (mode === "en") {
-    return { main: enRef || zhRef, sub: "ESV" };
+    return { main: enRef || zhRef, sub: label };
   }
   if (mode === "zh-en" && enRef && zhRef) {
-    return { main: zhRef, sub: `${enRef}  ·  CUV · ESV` };
+    return { main: zhRef, sub: `${enRef}  ·  ${label}` };
   }
   if (mode === "zh-en" && zhRef) {
-    return { main: zhRef, sub: "CUV · 和合本" };
+    return { main: zhRef, sub: label };
   }
-  return { main: zhRef || enRef, sub: "和合本" };
+  return { main: zhRef || enRef, sub: label || "CUV" };
 }
 
 function drawHairline(

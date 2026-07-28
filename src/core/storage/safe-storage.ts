@@ -7,6 +7,8 @@ const LEGACY_PREVIEW_KEYS = [
   "jinju-ri:collection:v1",
 ];
 
+const MAX_FALLBACK_ITEMS = 20;
+
 /** 启动时清理已膨胀的预览图字段（base64 PNG 易超 5MB 配额） */
 export function migrateStripHeavyPreviews(): void {
   for (const key of LEGACY_PREVIEW_KEYS) {
@@ -20,11 +22,7 @@ export function migrateStripHeavyPreviews(): void {
       const slim = parsed.map((item) => stripPreview(item));
       localStorage.setItem(key, JSON.stringify(slim));
     } catch {
-      try {
-        localStorage.removeItem(key);
-      } catch {
-        // ignore
-      }
+      console.warn("[jinju-ri] failed to migrate localStorage previews", key);
     }
   }
 }
@@ -56,13 +54,10 @@ export function safeSetJson(key: string, value: unknown): void {
     // still failing
   }
 
-  // 最后手段：清相关键后只写精简数据
+  // 最后手段：只压缩当前键，绝不删除收藏/历史中的另一个键。
   try {
-    for (const k of LEGACY_PREVIEW_KEYS) {
-      if (k !== key) localStorage.removeItem(k);
-    }
     const slim = Array.isArray(value)
-      ? value.map((v) => stripPreview(v)).slice(0, 20)
+      ? value.map((v) => stripPreview(v)).slice(0, MAX_FALLBACK_ITEMS)
       : stripPreview(value);
     localStorage.setItem(key, JSON.stringify(slim));
   } catch (err) {

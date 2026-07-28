@@ -157,7 +157,7 @@ export async function generateVerseImage(
       verse,
       theme,
       template,
-      size: IMAGE_SIZES.story,
+      size,
       date: verseOfDay.date || new Date().toISOString().slice(0, 10),
       bilingualMode: bilingualMode === "en" ? "en" : "zh",
       showBrandWatermark: true,

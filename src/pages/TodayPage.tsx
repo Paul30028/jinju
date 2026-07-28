@@ -7,6 +7,7 @@ import { loadPreferences } from "@/core/storage";
 import VerseStudio from "@/components/VerseStudio";
 import { useI18n } from "@/core/i18n";
 import type { BilingualMode, Verse } from "@/core/types";
+import { getVerseTranslationLabel } from "@/core/verse/translation-label";
 
 /** 今日：单焦点 — 经文 + 大图 + 保存/分享 */
 export default function TodayPage() {
@@ -84,7 +85,6 @@ export default function TodayPage() {
    * - zh-en → 双语，主语言随界面：中文界面中文优先，其它英文优先
    */
   const onlyEn = verseMode === "en";
-  const onlyZh = verseMode === "zh";
   const bilingual = verseMode === "zh-en";
   const enPrimary = onlyEn || (bilingual && locale !== "zh");
 
@@ -124,16 +124,9 @@ export default function TodayPage() {
         : enText
       : null;
 
-  // 译本标签：纯英文只 ESV；纯中文只 CUV；双语才两者
-  const translationLabel = onlyEn
-    ? enText
-      ? "ESV"
-      : "ESV…"
-    : onlyZh
-      ? t("common.cuv")
-      : enText
-        ? `${t("common.cuv")} · ESV`
-        : t("common.cuv");
+  const translationLabel = enLoading
+    ? `${getVerseTranslationLabel(displayVerse, verseMode)}…`
+    : getVerseTranslationLabel(displayVerse, verseMode);
 
   return (
     <section className="today" aria-labelledby="today-title">
