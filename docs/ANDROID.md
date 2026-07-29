@@ -11,6 +11,18 @@
 | JDK 17 | Android Studio 一般自带 |
 | 可选：安卓手机 | 打开「开发者选项 → USB 调试」 |
 
+## GitHub Actions 云端 APK（推荐用于测试）
+
+仓库的 **Android APK** 工作流会在 `main` 或 `codex/**` 分支的相关改动后自动执行；
+也可在 GitHub 的 **Actions → Android APK → Run workflow** 手动触发。
+
+- 每次同时构建 **CN（Serein 静澄）** 与 **国际版（Serein）**。
+- 工作流先执行 TypeScript 检查，再生成 Capacitor Android 工程与 debug APK。
+- 在运行详情的 **Artifacts** 下载 `serein-cn-debug-apk` 或
+  `serein-intl-debug-apk`，保留 14 天；下载并解压后即可安装测试。
+
+> 这是 debug 包，仅供内部测试；商店发布需要另行配置签名密钥和 release 工作流。
+
 ## 一键生成 APK（推荐）
 
 ### 若双击 `build-apk.bat` 会「闪退」
