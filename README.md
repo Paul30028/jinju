@@ -10,6 +10,7 @@
 | **阶段2 架构（待确认）** | [docs/ARCHITECTURE_V2_PHASE2.md](./docs/ARCHITECTURE_V2_PHASE2.md) |
 | 早期 PRD / 架构 | [docs/PRD.md](./docs/PRD.md) · [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) |
 | 图像生成管道 | [docs/IMAGE_PIPELINE.md](./docs/IMAGE_PIPELINE.md) |
+| 图片网关设计 | [docs/IMAGE_GATEWAY.md](./docs/IMAGE_GATEWAY.md) |
 
 ## 当前进度
 
