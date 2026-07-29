@@ -42,7 +42,12 @@ export async function loadGatewayBackgrounds(
   const baseUrl = getImageGatewayUrl();
   if (!baseUrl || !themeId) return [];
 
-  const url = new URL(`${baseUrl}/v1/backgrounds`);
+  let url: URL;
+  try {
+    url = new URL(`${baseUrl}/v1/backgrounds`);
+  } catch {
+    return [];
+  }
   url.searchParams.set("theme", themeId);
   url.searchParams.set("page", String(Math.max(0, page)));
   url.searchParams.set("limit", String(Math.max(1, Math.min(limit, 30))));
