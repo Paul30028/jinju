@@ -1,5 +1,9 @@
 import localCatalog from "../../data/background-catalog.json";
 import { hashDateSeed } from "../hash";
+import {
+  loadGatewayBackgrounds,
+  type GatewayBackgroundItem,
+} from "./image-gateway";
 
 /**
  * 图片源策略（防脱源 + 严格主题）
@@ -30,6 +34,11 @@ export interface BgCatalogItem {
   /** 备源2 URL（可选，无则自动生成 picsum） */
   urlBackup2?: string;
   credit?: string;
+  /** 素材原始页面；用于版权追溯与问题下架。 */
+  sourceUrl?: string;
+  license?: string;
+  /** false 时绝不能叠字导出；网关素材必须显式为 true。 */
+  exportAllowed?: boolean;
 }
 
 export interface BgCatalog {
@@ -184,6 +193,9 @@ export function normalizeItem(item: BgCatalogItem): BgCatalogItem {
   };
   if (item.tags) next.tags = item.tags;
   if (item.credit) next.credit = item.credit;
+  if (item.sourceUrl) next.sourceUrl = item.sourceUrl;
+  if (item.license) next.license = item.license;
+  if (item.exportAllowed !== undefined) next.exportAllowed = item.exportAllowed;
   if (backup1) next.urlBackup = backup1;
   if (backup2) next.urlBackup2 = backup2;
   return next;
@@ -405,6 +417,7 @@ export function filterItemsByThemeStrict(
       if (!Array.isArray(i.themes) || !i.themes.length) return false;
       if (i.themes.includes("*")) return false;
       if (!i.url || isRandomPlaceholderUrl(i.url)) return false;
+      if (i.exportAllowed === false) return false;
       if (isPortraitBlockedItem(i)) return false;
       // 必须明确挂到当前主题；允许单主题或多标签中含本主题
       return i.themes.includes(themeId);
@@ -657,6 +670,25 @@ async function buildThemePhotoPool(options: {
 
   for (let offset = 0; offset < PROVIDER_PAGE_LOOKAHEAD; offset++) {
     const page = basePage + offset;
+    // 主路径：服务端网关已统一供应商鉴权、内容筛选和导出授权。
+    const gatewayPool = gatewayItemsToCatalog(
+      await loadGatewayBackgrounds(
+        options.themeId,
+        page,
+        COPYRIGHT_FREE_PROVIDER_LIMIT,
+      ),
+      options.themeId,
+    );
+    const gatewayFresh = dedupeItems(gatewayPool).filter(
+      (item) =>
+        item.id !== options.excludeItemId && !hasUsedBgMarker(used, item),
+    );
+    if (gatewayFresh.length) {
+      rememberProviderPage(options.themeId, page);
+      return gatewayFresh;
+    }
+
+    // 兼容主路径：未部署网关的现有版本仍可使用原有提供方。
     const dynamicPool = await loadCopyrightFreeProviderItems(
       options.themeId,
       page,
@@ -674,6 +706,23 @@ async function buildThemePhotoPool(options: {
   const nextPage = bumpProviderPage(options.themeId);
   for (let offset = 0; offset < PROVIDER_PAGE_LOOKAHEAD; offset++) {
     const page = nextPage + offset;
+    const gatewayPool = gatewayItemsToCatalog(
+      await loadGatewayBackgrounds(
+        options.themeId,
+        page,
+        COPYRIGHT_FREE_PROVIDER_LIMIT,
+      ),
+      options.themeId,
+    );
+    const gatewayFresh = dedupeItems(gatewayPool).filter(
+      (item) =>
+        item.id !== options.excludeItemId && !hasUsedBgMarker(used, item),
+    );
+    if (gatewayFresh.length) {
+      rememberProviderPage(options.themeId, page);
+      return gatewayFresh;
+    }
+
     const dynamicPool = await loadCopyrightFreeProviderItems(
       options.themeId,
       page,
@@ -688,7 +737,29 @@ async function buildThemePhotoPool(options: {
     }
   }
 
-  return [];
+  // 在线源失败时优先回到已审核摄影目录，最后才让上层使用 Canvas 渐变。
+  return filterItemsByThemeStrict(options.catalog, options.themeId).filter(
+    (item) => item.id !== options.excludeItemId,
+  );
+}
+
+function gatewayItemsToCatalog(
+  items: GatewayBackgroundItem[],
+  themeId: string,
+): BgCatalogItem[] {
+  return items.map((item) => {
+    const out: BgCatalogItem = {
+      id: `gateway-${item.provider}-${item.id}`,
+      themes: [themeId],
+      tags: ["gateway", item.provider],
+      url: item.imageUrl,
+      credit: item.attribution,
+      exportAllowed: item.exportAllowed,
+    };
+    if (item.sourceUrl) out.sourceUrl = item.sourceUrl;
+    if (item.license) out.license = item.license;
+    return out;
+  });
 }
 
 function dedupeItems(items: BgCatalogItem[]): BgCatalogItem[] {
