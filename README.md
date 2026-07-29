@@ -40,6 +40,16 @@ npm run check   # TypeScript 严格检查
 npm run build   # 生产构建
 ```
 
+### 摄影图库（生产环境）
+
+每日摄影背景以 Pixabay、Pexels、Unsplash 等图库为主。生产环境请配置
+`VITE_IMAGE_GATEWAY_URL`，由图片网关统一完成供应商鉴权、内容筛选、版权元数据和
+Canvas 导出校验；浏览器不会直接持有供应商密钥。网关不可用时，应用依次降级到兼容
+图库、内置审核摄影图和本地 Canvas 渐变，因此网络故障不会阻断出图。
+
+网关需要响应 `GET /v1/backgrounds?theme={theme}&page={page}&limit={limit}&orientation=portrait`，
+并返回 `{ items: [{ id, imageUrl, provider, attribution, exportAllowed: true }] }`。
+
 ## Android 试玩（Capacitor）
 
 需安装 [Android Studio](https://developer.android.com/studio)。
