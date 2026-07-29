@@ -1,69 +1,82 @@
-name: Build Android APK
+name: Android APK
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
-      - "agent/**"
-  pull_request:
-  workflow_dispatch:
+      - "codex/**"
+    paths:
+      - "src/**"
+      - "public/**"
+      - "scripts/**"
+      - "android/**"
+      - "capacitor.config.ts"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/android-apk.yml"
 
 permissions:
   contents: read
 
 jobs:
-  build-apk:
-    name: Build debug APK
+  build-debug-apk:
+    name: Build ${{ matrix.region }} debug APK
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        region: [cn, intl]
 
     steps:
-      - name: Checkout
+      - name: Check out source
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
-      - name: Setup Java
+      - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 21
+          java-version: "21"
+          cache: gradle
 
-      - name: Setup Android SDK
+      - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
       - name: Install Android platform
         run: sdkmanager "platform-tools" "platforms;android-36"
 
-      - name: Install dependencies
-        run: npm install
+      - name: Install locked dependencies
+        run: npm ci
 
-      - name: Build web assets
-        run: npm run build:cn
+      - name: Type-check
+        run: npm run check
 
-      - name: Prepare Capacitor Android project
+      - name: Build regional web bundle
+        run: npm run build:${{ matrix.region }}
+
+      - name: Generate regional Android project
         run: |
-          if [ -d android ]; then
-            npx cap sync android
-          else
-            npx cap add android
-            npx cap sync android
-          fi
+          node scripts/apply-capacitor-region.mjs ${{ matrix.region }}
+          npx cap add android
+          npx cap sync android
 
-      - name: Build APK
+      - name: Build debug APK
+        working-directory: android
         run: |
-          chmod +x android/gradlew
-          cd android
-          ./gradlew assembleDebug --no-daemon
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon --stacktrace
 
-      - name: Upload APK artifact
+      - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: jinju-debug-apk-${{ github.run_number }}
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: serein-${{ matrix.region }}-debug-apk
+          path: android/app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
           retention-days: 14
