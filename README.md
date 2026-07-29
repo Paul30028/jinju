@@ -11,6 +11,7 @@
 | 早期 PRD / 架构 | [docs/PRD.md](./docs/PRD.md) · [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) |
 | 图像生成管道 | [docs/IMAGE_PIPELINE.md](./docs/IMAGE_PIPELINE.md) |
 | 图片网关设计 | [docs/IMAGE_GATEWAY.md](./docs/IMAGE_GATEWAY.md) |
+| 图片网关编码蓝图 | [docs/IMAGE_GATEWAY_BLUEPRINT.md](./docs/IMAGE_GATEWAY_BLUEPRINT.md) |
 
 ## 当前进度
 
