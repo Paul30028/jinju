@@ -1,0 +1,15 @@
+{
+  "name": "serein-image-gateway",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Mock image gateway for Serein/Jinju background integration",
+  "scripts": {
+    "dev": "node src/server.mjs",
+    "start": "node src/server.mjs",
+    "test": "node --test test/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
