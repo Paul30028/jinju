@@ -20,7 +20,14 @@ interface GatewayResponse {
   items?: GatewayBackgroundItem[];
 }
 
+export interface GatewaySelectionInput {
+  assetId: string;
+  date: string;
+  themeId: string;
+}
+
 const REQUEST_TIMEOUT_MS = 3_500;
+const INSTALLATION_ID_KEY = "serein:image-gateway:installation-id:v1";
 
 export function getImageGatewayUrl(): string {
   return ((import.meta.env.VITE_IMAGE_GATEWAY_URL as string | undefined) || "")
@@ -67,6 +74,71 @@ export async function loadGatewayBackgrounds(
     return [];
   } finally {
     window.clearTimeout(timer);
+  }
+}
+
+/**
+ * 仅在图片实际加载并用于出图后记录每日选择。
+ *
+ * 安装标识只保留在本机；M1 服务会先散列它再持久化，避免记录原始标识。
+ * 记录失败不影响图片加载或导出。
+ */
+export async function recordGatewayBackgroundSelection(
+  input: GatewaySelectionInput,
+): Promise<void> {
+  const baseUrl = getImageGatewayUrl();
+  if (
+    !baseUrl ||
+    !input.assetId ||
+    !input.themeId ||
+    !/^\d{4}-\d{2}-\d{2}$/.test(input.date)
+  ) {
+    return;
+  }
+
+  let url: string;
+  try {
+    url = new URL("/v1/backgrounds/selection", `${baseUrl}/`).toString();
+  } catch {
+    return;
+  }
+
+  const controller = new AbortController();
+  const timer = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  try {
+    await fetch(url, {
+      method: "POST",
+      signal: controller.signal,
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        assetId: input.assetId,
+        date: input.date,
+        theme: input.themeId,
+        installationId: getGatewayInstallationId(),
+      }),
+    });
+  } catch {
+    // 观测回写是尽力而为，不能阻断用户生成卡片。
+  } finally {
+    window.clearTimeout(timer);
+  }
+}
+
+export function getGatewayInstallationId(): string {
+  try {
+    const existing = localStorage.getItem(INSTALLATION_ID_KEY);
+    if (existing) return existing;
+    const next =
+      typeof crypto?.randomUUID === "function"
+        ? crypto.randomUUID()
+        : `install-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    localStorage.setItem(INSTALLATION_ID_KEY, next);
+    return next;
+  } catch {
+    return "ephemeral-installation";
   }
 }
 
