@@ -2,6 +2,7 @@ import localCatalog from "../../data/background-catalog.json";
 import { hashDateSeed } from "../hash";
 import {
   loadGatewayBackgrounds,
+  recordGatewayBackgroundSelection,
   type GatewayBackgroundItem,
 } from "./image-gateway";
 
@@ -39,6 +40,8 @@ export interface BgCatalogItem {
   license?: string;
   /** false 时绝不能叠字导出；网关素材必须显式为 true。 */
   exportAllowed?: boolean;
+  /** 网关分配的稳定素材 ID；仅用于每日选择回写，不写入远程目录。 */
+  gatewayAssetId?: string;
 }
 
 export interface BgCatalog {
@@ -196,6 +199,7 @@ export function normalizeItem(item: BgCatalogItem): BgCatalogItem {
   if (item.sourceUrl) next.sourceUrl = item.sourceUrl;
   if (item.license) next.license = item.license;
   if (item.exportAllowed !== undefined) next.exportAllowed = item.exportAllowed;
+  if (item.gatewayAssetId) next.gatewayAssetId = item.gatewayAssetId;
   if (backup1) next.urlBackup = backup1;
   if (backup2) next.urlBackup2 = backup2;
   return next;
@@ -636,6 +640,13 @@ export async function loadThemePhotoStrict(options: {
     );
     allTried.push(...loaded.tried);
     if (loaded.img) {
+      if (item.gatewayAssetId) {
+        void recordGatewayBackgroundSelection({
+          assetId: item.gatewayAssetId,
+          date: options.date,
+          themeId: options.themeId,
+        });
+      }
       return {
         ...loaded,
         itemId: item.id,
@@ -749,7 +760,9 @@ function gatewayItemsToCatalog(
 ): BgCatalogItem[] {
   return items.map((item) => {
     const out: BgCatalogItem = {
-      id: `gateway-${item.provider}-${item.id}`,
+      // 保留网关 ID，确保每日选择回写能命中同一素材；网关契约要求全局唯一。
+      id: item.id,
+      gatewayAssetId: item.id,
       themes: [themeId],
       tags: ["gateway", item.provider],
       url: item.imageUrl,
