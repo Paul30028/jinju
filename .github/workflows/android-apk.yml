@@ -68,6 +68,9 @@ jobs:
       - name: Type-check
         run: npm run check
 
+      - name: Test image gateway contract
+        run: npm run test:gateway
+
       - name: Build regional web bundle
         run: npm run build:${{ matrix.region }}
 
