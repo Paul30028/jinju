@@ -23,7 +23,8 @@
     "cap:open:android": "npx cap open android",
     "android": "npm run build:android:cn && npx cap open android",
     "android:intl": "npm run build:android:intl && npx cap open android",
-    "apk": "node scripts/build-apk-node.mjs"
+    "apk": "node scripts/build-apk-node.mjs",
+    "test:gateway": "npm --prefix services/image-gateway test"
   },
   "dependencies": {
     "@capacitor/android": "^7.2.0",
